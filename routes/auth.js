@@ -4,8 +4,8 @@ const { signup, signin,socialSignIn,getSocials,updateSocials,resetPassword ,chan
 const { userValidationRules, validate,createUserValidationRules,ensureCorrectUser,loginRequired,validateInviter,ensureCorrectUserForPasswordReset } = require('../midlleware/auth')
 
 router.post('/signup', userValidationRules(), validate,validateInviter, signup)
-router.post('/signin/',userValidationRules(), validate,signin)
-router.post('/socialsignin/',userValidationRules(), validate,socialSignIn)
+router.post('/signin',userValidationRules(), validate,signin)
+router.post('/socialsignin',userValidationRules(), validate,socialSignIn)
 router.get('/:id/getsocials', loginRequired,ensureCorrectUser,getSocials)
 router.post('/:id/updatesocials', loginRequired,ensureCorrectUser,updateSocials)
 router.route('/resetPassword').post(resetPassword).put(ensureCorrectUserForPasswordReset,changePassword)

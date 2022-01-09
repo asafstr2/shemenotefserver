@@ -53,6 +53,9 @@ const ProductsSchema = new mongoose.Schema(
 			type: Boolean,
 			default: false
 		},
+		deliveryDate: {
+			type: Date
+		},
 		size: {
 			type: String,
 			default: '0'

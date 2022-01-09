@@ -3,19 +3,7 @@ const jwt = require('jsonwebtoken')
 const { sendMail } = require('../service/mailing/mailing')
 
 const userToToken = user => {
-	const token = jwt.sign(
-		{
-			pass: user.password.length,
-			id: user.id,
-			friendsInvited: user.friendsInvited,
-			username: user.username,
-			profileImageUrl: user.profileImageUrl,
-			role: user.role,
-			email: user.email,
-			createdAt: user.createdAt
-		},
-		process.env.SECRET_KEY
-	)
+	const token = jwt.sign(user.filterResponseForClient(), process.env.SECRET_KEY)
 	return { token }
 }
 

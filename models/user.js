@@ -10,14 +10,12 @@ const userSchema = new mongoose.Schema(
 			unique: true,
 			index: true
 		},
-		saved: [
-			{
-				type: mongoose.Types.ObjectId,
-				ref: 'Messege',
-				default: []
-			}
-		],
-
+		firstName: {
+			type: String
+		},
+		lastName: {
+			type: String
+		},
 		username: {
 			type: String,
 			unique: true
@@ -83,11 +81,11 @@ const userSchema = new mongoose.Schema(
 				type: mongoose.Schema.Types.ObjectId,
 				ref: 'Products'
 			}
-		],
+		]
 	},
 
 	{
-		timestamps: true
+		timestamps: true,
 	}
 )
 
@@ -187,6 +185,27 @@ userSchema.methods.updateCredentials = async function (
 
 userSchema.methods.validatePassword = async function validatePassword(data) {
 	return await bcrypt.compare(data, this.password)
+}
+userSchema.methods.filterResponseForClient = function validatePassword(
+	fields = []
+) {
+	userobj = this.toObject()
+	const doNotIncludeInResponse = [
+		'password',
+		'facebookId',
+		'facebook',
+		'googleId',
+		'google',
+		'paymentsimade',
+		'paymentsirecived',
+		'productPurchased',
+		'invitedBy',
+		'pushNotificationEndPoints',
+		'friendsInvited',
+		...fields
+	]
+	doNotIncludeInResponse.forEach(valToDelete => delete userobj[valToDelete])
+	return { ...userobj, id: userobj._id }
 }
 
 //creating the schema
