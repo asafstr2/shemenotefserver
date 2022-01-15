@@ -12,16 +12,16 @@ const ProductsSchema = new mongoose.Schema(
 			unique: true
 		},
 		otherLanguageTitle: {
-			he: { type: String },
-			ru: { type: String }
+			hebrew: { type: String },
+			russian: { type: String }
 		},
 		description: {
 			type: String,
 			required: true
 		},
 		otherLanguageDescription: {
-			he: { type: String },
-			ru: { type: String }
+			hebrew: { type: String },
+			russian: { type: String }
 		},
 		image: {
 			type: String,
