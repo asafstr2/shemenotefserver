@@ -75,7 +75,10 @@ exports.editUser = async (req, res, next) => {
 			cloudinary.uploader.destroy(
 				`shemen_otef/${oldLinks?.split('/')[8]?.split('.')[0]}`,
 				function (error, result) {
-					if (error) console.log({ profileImageError: error })
+					if (error) {
+						console.log({ profileImageError: error })
+						next(error)
+					}
 					console.log({ profileImageResult: result })
 				}
 			)
@@ -203,7 +206,7 @@ exports.deleteUser = async (req, res, next) => {
 				$in: messages
 			}
 		})
-		const deleted=await db.User.deleteOne({ _id: req.user.id })
+		const deleted = await db.User.deleteOne({ _id: req.user.id })
 		return res.status(200).json(deleted)
 	} catch (error) {
 		console.log(error)

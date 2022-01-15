@@ -1,4 +1,26 @@
 const db = require('../models')
+const signature = require('../service/images/signUpload');
+
+const cloudinary = require('cloudinary').v2
+require('../service/images/cloudineryCfg')
+const cloudName = cloudinary.config().cloud_name;
+const apiKey = cloudinary.config().api_key;
+
+exports.uploadAsset = async (req, res, next) => {
+	try {
+		const sig = signature.signuploadform()
+		res.json({
+			signature: sig.signature,
+			timestamp: sig.timestamp,
+			cloudname: cloudName,
+			apikey: apiKey,
+			folder:shemenotef,
+			url: `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`
+		})
+	} catch (error) {
+		next(error)
+	}
+}
 
 exports.deleteProductById = async (req, res, next) => {
 	try {

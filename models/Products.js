@@ -13,7 +13,13 @@ const ProductsSchema = new mongoose.Schema(
 		},
 		otherLanguageTitle: {
 			hebrew: { type: String },
-			russian: { type: String }
+			russian: { type: String },
+			default: {
+				type: String,
+				default: function () {
+					return this.title
+				}
+			}
 		},
 		description: {
 			type: String,
@@ -21,7 +27,13 @@ const ProductsSchema = new mongoose.Schema(
 		},
 		otherLanguageDescription: {
 			hebrew: { type: String },
-			russian: { type: String }
+			russian: { type: String },
+			default: {
+				type: String,
+				default: function () {
+					return this.description
+				}
+			}
 		},
 		image: {
 			type: String,

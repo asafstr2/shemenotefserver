@@ -11,7 +11,6 @@ exports.loginRequired = function (req, res, next) {
 		//trying to decode just to see if no one tempered with it and it valid
 		jwt.verify(token, process.env.SECRET_KEY, function (err, decode) {
 			// since it is a middleware if valid move on
-			console.log({ err, decode })
 			if (decode) {
 				req.user = decode
 				return next()

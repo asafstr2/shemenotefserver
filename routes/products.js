@@ -5,7 +5,8 @@ const {
 	getProductById,
 	getAllProductForUsers,
 	createProduct,
-	getAllProduct
+	getAllProduct,
+	uploadAsset
 } = require('../handlers/products')
 const {
 	administrator,
@@ -15,10 +16,15 @@ const {
 
 // using prefix /api/paymant/:id/create
 router
+	.route('/:id/foradmin/uploadasset')
+	.post(loginRequired, ensureCorrectUser, administrator, uploadAsset)
+router
 	.route('/:id/foradmin')
 	.post(loginRequired, ensureCorrectUser, administrator, createProduct)
 	.get(loginRequired, ensureCorrectUser, administrator, getAllProduct)
-router.route('/:id/foradmin/:productId').delete(loginRequired, ensureCorrectUser, administrator,deleteProductById)
+router
+	.route('/:id/foradmin/:productId')
+	.delete(loginRequired, ensureCorrectUser, administrator, deleteProductById)
 router.route('/:productId').get(getProductById)
 router.route('/').get(getAllProductForUsers)
 
