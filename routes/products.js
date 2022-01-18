@@ -17,7 +17,7 @@ const {
 // using prefix /api/paymant/:id/create
 router
 	.route('/:id/foradmin/uploadasset')
-	.post(loginRequired, ensureCorrectUser, administrator, uploadAsset)
+	.get(loginRequired, ensureCorrectUser, administrator, uploadAsset)
 router
 	.route('/:id/foradmin')
 	.post(loginRequired, ensureCorrectUser, administrator, createProduct)

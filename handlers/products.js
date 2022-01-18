@@ -1,20 +1,20 @@
 const db = require('../models')
-const signature = require('../service/images/signUpload');
+const signature = require('../service/images/signUpload')
 
 const cloudinary = require('cloudinary').v2
 require('../service/images/cloudineryCfg')
-const cloudName = cloudinary.config().cloud_name;
-const apiKey = cloudinary.config().api_key;
+const cloudName = cloudinary.config().cloud_name
+const apiKey = cloudinary.config().api_key
 
 exports.uploadAsset = async (req, res, next) => {
 	try {
 		const sig = signature.signuploadform()
-		res.json({
+		res.status(200).json({
 			signature: sig.signature,
 			timestamp: sig.timestamp,
 			cloudname: cloudName,
 			apikey: apiKey,
-			folder:shemenotef,
+			folder: 'shemen_otef',
 			url: `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`
 		})
 	} catch (error) {
@@ -25,8 +25,19 @@ exports.uploadAsset = async (req, res, next) => {
 exports.deleteProductById = async (req, res, next) => {
 	try {
 		const { productId } = req.params
-		const data = await db.Products.findByIdAndDelete(productId)
-		res.status(200).json(data)
+		console.log(productId)
+		let foundProduct = await db.Products.findById(productId)
+
+		foundProduct?.images?.map(
+			async ({ public_id }) =>
+				await cloudinary.uploader.destroy(
+					public_id,
+					function (error, result) {}
+				)
+		)
+		await foundProduct.remove()
+
+		res.status(200).json(foundProduct)
 	} catch (error) {
 		next(error)
 	}

@@ -37,8 +37,12 @@ const ProductsSchema = new mongoose.Schema(
 		},
 		image: {
 			type: String,
-			required: true
+			required: true,
+			default: function () {
+				return this?.images[0]?.secure_url
+			}
 		},
+		images: [],
 		quantity: {
 			type: Number,
 			default: 0,

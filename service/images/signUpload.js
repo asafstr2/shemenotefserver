@@ -9,7 +9,6 @@ const signuploadform  = () => {
 	const signature = cloudinary.utils.api_sign_request(
 		{
 			timestamp: timestamp,
-			source: 'uw',
 			folder: 'shemen_otef'
 		},
 		apiSecret
