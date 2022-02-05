@@ -52,11 +52,75 @@ exports.getProductById = async (req, res, next) => {
 	}
 }
 exports.getAllProductForUsers = async (req, res, next) => {
+	let data
 	try {
-		let data = await db.Products.find({
-			listed: true,
-			availibleForDelivery: true
-		}).lean()
+		let searchQuery = req.query?.search
+		if (searchQuery) {
+			let requestedFields = req.query?.fields?.split(',') ?? []
+			let primeryFieldToSearch = req.query.primery ?? 'title'
+			let seconderyFieldsToSearch = req.query?.secondery?.split(',') ?? [
+				'description',
+				'otherLanguageTitle.hebrew'
+			]
+			let projectedFields = { description: 1, 'otherLanguageTitle.hebrew': 1 }
+			requestedFields.forEach(filed => {
+				projectedFields[filed] = 1
+			})
+			const query = [
+				{
+					$search: {
+						compound: {
+							should: [
+								{
+									text: {
+										query: searchQuery,
+										path: primeryFieldToSearch,
+										fuzzy: {
+											maxEdits: 2
+										},
+										score: {
+											boost: {
+												value: 5
+											}
+										}
+									}
+								},
+								{
+									text: {
+										query: searchQuery,
+										path: seconderyFieldsToSearch,
+										fuzzy: {
+											maxEdits: 2
+										}
+									}
+								}
+							]
+						}
+					}
+				},
+				{
+					$match: {
+						listed: true,
+						availibleForDelivery: true
+					}
+				},
+				{
+					$project: {
+						title: 1,
+						score: {
+							$meta: 'searchScore'
+						},
+						...projectedFields
+					}
+				}
+			]
+			data = await db.Products.aggregate(query)
+		} else {
+			data = await db.Products.find({
+				listed: true,
+				availibleForDelivery: true
+			}).lean()
+		}
 		res.status(200).json(data)
 	} catch (error) {
 		next(error)
@@ -77,6 +141,65 @@ exports.createProduct = async (req, res, next) => {
 exports.getAllProduct = async (req, res, next) => {
 	try {
 		let data = await db.Products.find()
+		res.status(200).json(data)
+	} catch (error) {
+		next(error)
+	}
+}
+
+exports.autoCompleate = async (req, res, next) => {
+	try {
+		let searchQuery = req.query?.search ?? ''
+		let requestedFields = req.query?.fields?.split(',') ?? []
+		let primeryFieldToSearch = req.query.primery ?? 'otherLanguageTitle.default'
+		let projectedFields = {
+			description: 1,
+			'otherLanguageTitle.hebrew': 1,
+			'otherLanguageTitle.default': 1
+		}
+		requestedFields.forEach(filed => {
+			projectedFields[filed] = 1
+		})
+		console.log({ searchQuery })
+		const query = [
+			{
+				$search: {
+					compound: {
+						should: [
+							{
+								autocomplete: {
+									query: searchQuery,
+									path: primeryFieldToSearch,
+									score: {
+										boost: {
+											value: 5
+										}
+									}
+								}
+							}
+						]
+					}
+				}
+			},
+			{
+				$match: {
+					listed: true,
+					availibleForDelivery: true
+				}
+			},
+
+			// {
+			// 	$project: {
+			// 		title: 1,
+			// 		score: {
+			// 			$meta: 'searchScore'
+			// 		},
+			// 		...projectedFields
+			// 	}
+			// }
+		]
+
+		let data = await db.Products.aggregate(query)
 		res.status(200).json(data)
 	} catch (error) {
 		next(error)

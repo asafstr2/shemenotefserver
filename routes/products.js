@@ -6,7 +6,8 @@ const {
 	getAllProductForUsers,
 	createProduct,
 	getAllProduct,
-	uploadAsset
+	uploadAsset,
+	autoCompleate
 } = require('../handlers/products')
 const {
 	administrator,
@@ -14,6 +15,7 @@ const {
 	loginRequired
 } = require('../midlleware/auth')
 
+router.route('/autocomplete').get(autoCompleate)
 // using prefix /api/paymant/:id/create
 router
 	.route('/:id/foradmin/uploadasset')
@@ -27,5 +29,6 @@ router
 	.delete(loginRequired, ensureCorrectUser, administrator, deleteProductById)
 router.route('/:productId').get(getProductById)
 router.route('/').get(getAllProductForUsers)
+
 
 module.exports = router
