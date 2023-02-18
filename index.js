@@ -2,7 +2,7 @@ require('dotenv').config()
 const app = require('./server.js')
 const { webpushconfig } = require('./handlers/webPush')
 const dbConnection = require('./models/dbConnection')
-const PORT = process.env.PORT || 8082
+const PORT = process.env.PORT 
 
 webpushconfig()
 // ----------------socketio definition--------------------------------

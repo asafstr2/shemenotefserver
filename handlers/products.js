@@ -9,6 +9,14 @@ const apiKey = cloudinary.config().api_key
 exports.uploadAsset = async (req, res, next) => {
 	try {
 		const sig = signature.signuploadform()
+		console.log({
+			signature: sig.signature,
+			timestamp: sig.timestamp,
+			cloudname: cloudName,
+			apikey: apiKey,
+			folder: 'shemen_otef',
+			url: `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`
+		})
 		res.status(200).json({
 			signature: sig.signature,
 			timestamp: sig.timestamp,
@@ -161,7 +169,8 @@ exports.autoCompleate = async (req, res, next) => {
 			projectedFields[filed] = 1
 		})
 		console.log({ searchQuery })
-		const query = [
+
+		const agg = [
 			{
 				$search: {
 					compound: {
@@ -169,15 +178,23 @@ exports.autoCompleate = async (req, res, next) => {
 							{
 								autocomplete: {
 									query: searchQuery,
-									path: primeryFieldToSearch,
-									score: {
-										boost: {
-											value: 5
-										}
-									}
+									path: primeryFieldToSearch
+								}
+							},
+							{
+								autocomplete: {
+									query: searchQuery,
+									path: 'title'
+								}
+							},
+							{
+								autocomplete: {
+									query: searchQuery,
+									path: 'otherLanguageTitle.hebrew'
 								}
 							}
-						]
+						],
+						minimumShouldMatch: 1
 					}
 				}
 			},
@@ -186,20 +203,11 @@ exports.autoCompleate = async (req, res, next) => {
 					listed: true,
 					availibleForDelivery: true
 				}
-			},
-
-			// {
-			// 	$project: {
-			// 		title: 1,
-			// 		score: {
-			// 			$meta: 'searchScore'
-			// 		},
-			// 		...projectedFields
-			// 	}
-			// }
+			}
 		]
 
-		let data = await db.Products.aggregate(query)
+		let data = await db.Products.aggregate(agg)
+		console.log({ data })
 		res.status(200).json(data)
 	} catch (error) {
 		next(error)
