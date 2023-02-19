@@ -17,7 +17,6 @@ const {
 	ensureCorrectUser,
 	viewOnly
 } = require('./midlleware/auth')
-
 //using cors to allow cross origin from diffrent port for front end to connect
 //todo secure cors allow only front end
 app.disable('etag')
@@ -40,7 +39,8 @@ if (process.env.NODE_ENV === 'test') {
 		res.send({ message: 'pass!' })
 	})
 }
-app.use('/api/paymant/:id', paymantSuccess)
+// app.use('/api/paymant/:id', paymantSuccess)
+app.use('/api/paymant/successhyp', paymantSuccess)
 
 //authRoutes= login or signup so /api/auth/singup or /api/auth/login
 app.use('/api/auth', authRoutes)
