@@ -4,7 +4,7 @@ const stripe = require("stripe")(process.env.STRIPE);
 const paypal3 = require('@paypal/checkout-server-sdk');
 const paypal2 = require('@paypal/payouts-sdk');
 const db = require('../models')
-const buildUrl = require('../service/url/urlUtils')
+const { buildUrl, parseUrl } = require('../service/url/urlUtils')
 const fetch = (...args) =>
 	import('node-fetch').then(({ default: fetch }) => fetch(...args))
 
@@ -47,24 +47,183 @@ function validateRequestBody(body, fields) {
 
 exports.successhyp = async (req, res, next) => {
 	try {
-		// const total = req.query.total
-		// if (total > 0) {
-		// 	const paymentIntent = await stripe.paymentIntents.create({
-		// 		amount: total,
-		// 		currency: 'usd'
-		// 	})
 		const params = req.params
-		console.log({ paymantRecived: 'ok', params: req.params })
-		res.status(201).send({
-			test: 'ok'
+		const userId = req.params.id
+		const body = req.body
+
+		const {
+			Id,
+			CCode,
+			Amount,
+			ACode,
+			Order, //'the product id/order id',
+			Fild1, // full name
+			Fild2, //email,
+			Fild3, //phone number
+			Bank,
+			Payments,
+			UserId, //thodat zehut,
+			Brand,
+			Issuer,
+			L4digit,
+			street,
+			city,
+			zip,
+			cell,
+			Coin,
+			Tmonth,
+			Tyear,
+			errMsg, //'תקין (0)',
+			Hesh,
+			UID, //'23022614362808822864817',
+			SpType,
+			BinCard // '552177'
+		} = body
+		const serverPayParams = {
+			action: 'APISign',
+			What: 'VERIFY',
+			KEY: process.env.HYP_PAYMANT_API_KEY,
+			PassP: process.env.HYP_PAYMANT_PassP_KEY,
+			Masof: process.env.HYP_TERMINAL
+		}
+		const url = buildUrl('https://icom.yaad.net/p/', {
+			queryParams: { ...serverPayParams, ...req.body }
 		})
-		// }
-		//  else {
-		// 	return next({
-		// 		status: 400,
-		// 		message: 'total cant be 0'
-		// 	})
-		// }
+		const response = await fetch(url)
+		const CCoderes = await response.text()
+		console.log({
+			CCoderes,
+			type: typeof CCoderes,
+			bool: CCoderes === 'CCode=200'
+		})
+		if (
+			(CCoderes === 'CCode=200\n' || CCoderes === 'CCode=0\n') &&
+			CCoderes !== 'CCode=902\n'
+		) {
+			const order = await db.Orders.findById(Order)
+			console.log({ order, Order })
+			order.paymantStatus = 'compleated'
+			await order.save()
+			res.status(201).send({
+				verify: 'ok'
+			})
+		} else {
+			return next({
+				status: 400,
+				message: 'credit card declined'
+			})
+		}
+	} catch (error) {
+		next(error)
+	}
+}
+
+exports.createPaymanthyp = async (req, res, next) => {
+	try {
+		const userId = req.params.id
+		const user = await db.User.findById(userId)
+		const body = req.body
+
+		const foundProductPromise = Object.keys(body.products).map(productId =>
+			db.Products.findById(
+				productId,
+				'title quantetyInStock price.value'
+			).lean()
+		)
+		const foundProducts = await Promise.all(foundProductPromise)
+
+		const enhencedProduct = foundProducts.map(product => {
+			return {
+				quantity: body.products[product._id],
+				price: product.price.value,
+				item: product.title
+			}
+		})
+		const payAmmount = enhencedProduct.reduce(
+			(acc, { price, quantity }) => acc + price * quantity,
+			0
+		)
+		console.log({ enhencedProduct, payAmmount, body })
+		const itemFiled = itemize(enhencedProduct)
+		const requiredFields = [
+			'ClientName',
+			'ClientLName',
+			'street',
+			'city',
+			'zip',
+			'phone',
+			'cell',
+			'email'
+		]
+		const { street, city, zip, phone, cell, email } = req.body
+		const address = `${street} ${city} ${zip}`
+		const phones = `${phone} ${cell}`
+		const isreqFromClientValid = validateRequestBody(req.body, requiredFields)
+		console.log({ isreqFromClientValid })
+		if (!isreqFromClientValid.status) {
+			return next({
+				status: 400,
+				message: `missing param ${isreqFromClientValid.field}`
+			})
+		}
+		const order = await db.Orders.create({
+			products: foundProducts,
+			purchesedBy: user,
+			address,
+			phone: phones,
+			paymantStatus: 'created'
+		})
+		//we need to create orders schema and link the order id here and to the user
+		const serverPayParams = {
+			action: 'APISign',
+			What: 'SIGN',
+			KEY: process.env.HYP_PAYMANT_API_KEY,
+			PassP: process.env.HYP_PAYMANT_PassP_KEY,
+			Masof: process.env.HYP_TERMINAL,
+			Info: 'shemen-otef',
+			UTF8: 'True',
+			UTF8out: 'True',
+			Sign: 'False',
+			Amount: payAmmount,
+			Order: order._id,
+			Tash: '1',
+			FixTash: 'True',
+			tashType: '1',
+			sendemail: 'asafstr2@gmail.com',
+			MoreData: 'True',
+			pageTimeOut: 'True',
+			PageLang: 'HEB',
+			tmp: '1',
+			Coin: '1'
+		}
+
+		const invoiceParameters = {
+			SendHesh: 'True',
+			Pritim: 'True',
+			// Requierd if Pritim equals True
+			heshDesc: itemFiled
+		}
+
+		const url = buildUrl('https://icom.yaad.net/p/', {
+			queryParams: { ...serverPayParams, ...invoiceParameters, ...req.body }
+		})
+		const response = await fetch(url)
+		const paymantUrlQuery = await response.text()
+		const paymantUrl = `https://icom.yaad.net/p/?action=pay&${paymantUrlQuery}`
+
+		const updatedUser = await db.User.findByIdAndUpdate(
+			userId,
+			{
+				$push: {
+					orders: order,
+					productPurchased: { $each: foundProducts }
+				}
+			},
+			{ new: true }
+		).lean()
+		res.status(201).send({
+			paymantUrl
+		})
 	} catch (error) {
 		next(error)
 	}
@@ -91,80 +250,6 @@ exports.createPaymant = async (req, res, next) => {
 	}
 }
 
-exports.createPaymanthyp = async (req, res, next) => {
-	try {
-		const userId = req.params.id
-		const user = req.user
-		const itemFiled = itemize([
-			{ item: 'test1', quantity: '1', price: '2.0' },
-			{ item: 'test2', quantity: '2', price: '4.0' }
-		])
-		console.log({ itemFiled })
-		const requiredFields = [
-			'ClientName',
-			'ClientLName',
-			'street',
-			'city',
-			'zip',
-			'phone',
-			'cell',
-			'email'
-		]
-		const isreqFromClientValid = validateRequestBody(req.body, requiredFields)
-		console.log({ isreqFromClientValid })
-		if (!isreqFromClientValid.status) {
-			return next({
-				status: 400,
-				message: `missing param ${isreqFromClientValid.field}`
-			})
-		}
-		const serverPayParams = {
-			action: 'APISign',
-			What: 'SIGN',
-			KEY: process.env.HYP_PAYMANT_API_KEY,
-			PassP: process.env.HYP_PAYMANT_PassP_KEY,
-			Masof: process.env.HYP_TERMINAL,
-			Info: 'shemen-otef',
-			UTF8: 'True',
-			UTF8out: 'True',
-			Sign: 'False',
-			Amount: '10',
-			Order: 'the product id/order id',
-			Tash: '1',
-			FixTash: 'True',
-			tashType: '1',
-			sendemail: 'asafstr2@gmail.com',
-			MoreData: 'True',
-			pageTimeOut: 'True',
-			PageLang: 'HEB',
-			tmp: '1',
-			Coin: '1'
-		}
-
-		const invoiceParameters = {
-			SendHesh: 'True',
-			Pritim: 'True',
-			// Requierd if Pritim equals True
-			heshDesc: itemFiled
-		}
-
-		const url = buildUrl('https://icom.yaad.net/p/', {
-			queryParams: { ...serverPayParams, ...invoiceParameters, ...req.body }
-		})
-		const response = await fetch(url)
-		const body = await response.text()
-		const returnedParams = body
-		const paytmantUrl = `https://icom.yaad.net/p/?action=pay&${returnedParams}`
-
-		console.log({ url, returnedParams })
-		// res.redirect(paytmantUrl)
-		res.status(201).send({
-			paytmantUrl
-		})
-	} catch (error) {
-		next(error)
-	}
-}
 
 exports.PaypalcreatePaymant = async (req, res, next) => {
 

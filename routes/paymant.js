@@ -4,12 +4,14 @@ const {
 	createPaymant,
 	PaypalcreatePaymant,
 	success,
-	createPaymanthyp
+	createPaymanthyp,
+	successhyp
 } = require('../handlers/paymant')
 
 // using prefix /api/paymant/:id/create
 router.route('/stripe').post(createPaymant)
 router.route('/paypal/:receiverid').post(PaypalcreatePaymant)
 router.route('/hyp').post(createPaymanthyp)
+router.route('/hyp/success').post(successhyp)
 
 module.exports = router;

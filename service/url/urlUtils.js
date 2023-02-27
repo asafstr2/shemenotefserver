@@ -15,5 +15,23 @@ function buildUrl(baseUrl, options = {}) {
 
 	return url
 }
+const url = require('url')
 
-module.exports = buildUrl
+function parseUrl(inputUrl) {
+	const parsedUrl = new url.URL(inputUrl)
+
+	const queryParams = {}
+	for (let [key, value] of parsedUrl.searchParams) {
+		queryParams[key] = value
+	}
+
+	return {
+		protocol: parsedUrl.protocol.replace(':', ''),
+		host: parsedUrl.hostname,
+		port: parsedUrl.port,
+		path: parsedUrl.pathname,
+		queryParameters: queryParams
+	}
+}
+
+module.exports = { buildUrl, parseUrl }

@@ -40,7 +40,7 @@ if (process.env.NODE_ENV === 'test') {
 	})
 }
 // app.use('/api/paymant/:id', paymantSuccess)
-app.use('/api/paymant/successhyp', paymantSuccess)
+// app.use('/api/paymant/successhyp', paymantSuccess)
 
 //authRoutes= login or signup so /api/auth/singup or /api/auth/login
 app.use('/api/auth', authRoutes)

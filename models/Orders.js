@@ -1,7 +1,7 @@
-import mongoose from 'mongoose'
+const mongoose = require('mongoose')
 
 //user schema consist of email userName profile image and encripted password with a method comparePassword that returns a boolian
-const ProductsToDeliverSchema = new mongoose.Schema(
+const OrdersSchema = new mongoose.Schema(
 	{
 		products: [
 			{
@@ -19,6 +19,9 @@ const ProductsToDeliverSchema = new mongoose.Schema(
 		phone: {
 			type: String
 		},
+		paymantStatus: {
+			type: String
+		},
 		timesPurchesed: {
 			type: String
 		}
@@ -29,4 +32,4 @@ const ProductsToDeliverSchema = new mongoose.Schema(
 	}
 )
 
-module.exports = mongoose.model('ProductsToDeliver', ProductsToDeliverSchema)
+module.exports = mongoose.model('Orders', OrdersSchema)
