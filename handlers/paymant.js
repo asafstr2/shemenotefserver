@@ -101,9 +101,17 @@ exports.successhyp = async (req, res, next) => {
 			CCoderes !== 'CCode=902\n'
 		) {
 			const order = await db.Orders.findById(Order)
-			console.log({ order, Order })
 			order.paymantStatus = 'compleated'
 			await order.save()
+			const updatedUser = await db.User.findByIdAndUpdate(
+				userId,
+				{
+					$push: {
+						productPurchased: { $each: foundProducts }
+					}
+				},
+				{ new: true }
+			).lean()
 			res.status(201).send({
 				verify: 'ok'
 			})
@@ -215,8 +223,8 @@ exports.createPaymanthyp = async (req, res, next) => {
 			userId,
 			{
 				$push: {
-					orders: order,
-					productPurchased: { $each: foundProducts }
+					orders: order
+					// productPurchased: { $each: foundProducts }
 				}
 			},
 			{ new: true }

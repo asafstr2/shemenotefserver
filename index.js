@@ -5,7 +5,6 @@ const dbConnection = require('./models/dbConnection')
 const PORT = process.env.PORT 
 
 webpushconfig()
-// ----------------socketio definition--------------------------------
 
 const server = app.listen(PORT, () =>
 	console.log(`server is running on port ${PORT}`)

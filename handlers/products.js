@@ -127,7 +127,9 @@ exports.getAllProductForUsers = async (req, res, next) => {
 			data = await db.Products.find({
 				listed: true,
 				availibleForDelivery: true
-			}).lean()
+			})
+				.populate({ path: 'category', select: 'title' })
+				.lean()
 		}
 		res.status(200).json(data)
 	} catch (error) {
@@ -140,7 +142,25 @@ exports.createProduct = async (req, res, next) => {
 		if (foundProduct) {
 			return next({ message: 'This title is taken try a differnt title' })
 		}
-		const data = await db.Products.create({ ...req.body })
+		let foundCategory
+		if (req.body.category) {
+			foundCategory = await db.Categories.findOne({
+				title: req.body.category
+			})
+			if (foundCategory) {
+				foundCategory.Products.push(foundProduct)
+				await foundCategory.save()
+			} else {
+				foundCategory = await db.Categories.create({
+					...req.body,
+					title: req.body.category
+				})
+			}
+		}
+		const data = await db.Products.create({
+			...req.body,
+			category: foundCategory
+		})
 		res.status(201).json(data)
 	} catch (error) {
 		next(error)

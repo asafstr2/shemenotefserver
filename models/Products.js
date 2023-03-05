@@ -77,8 +77,8 @@ const ProductsSchema = new mongoose.Schema(
 			default: '0'
 		},
 		category: {
-			type: String,
-			default: 'general'
+			type: mongoose.Types.ObjectId,
+			ref: 'Categories'
 		},
 		brand: {
 			type: String,
