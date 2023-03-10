@@ -27,5 +27,8 @@
     "pretty-error": "^4.0.0",
     "stripe": "^11.14.0",
     "web-push": "^3.5.0"
+  },
+  "engines": {
+    "node": ">=18.00.0"
   }
 }
