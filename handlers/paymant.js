@@ -107,7 +107,7 @@ exports.successhyp = async (req, res, next) => {
 				userId,
 				{
 					$push: {
-						productPurchased: { $each: foundProducts }
+						productPurchased: { $each: order.products }
 					}
 				},
 				{ new: true }
@@ -125,7 +125,7 @@ exports.successhyp = async (req, res, next) => {
 		next(error)
 	}
 }
-
+// http://localhost:3000/paymantSucess?Id=108209599&CCode=0&Amount=28&ACode=0067248&Order=640cb207402153898fbc8b77&Fild1=Asaf%20Strilitz&Fild2=asafstr2%40gmail.com&Fild3=&Bank=6&Payments=1&UserId=L717289593&Brand=2&Issuer=6&L4digit=6022&street=Hadarom&city=Shderot&zip=8711817&cell=Hashaked%2024&Coin=1&Tmonth=04&Tyear=2023&Info=shemen-otef&errMsg=%D7%AA%D7%A7%D7%99%D7%9F%20(0)&Hesh=0&UID=23031118555908822864318&SpType=0&BinCard=458012
 exports.createPaymanthyp = async (req, res, next) => {
 	try {
 		const userId = req.params.id

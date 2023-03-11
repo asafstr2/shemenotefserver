@@ -10,35 +10,42 @@ const mongoose = require('mongoose')
 exports.getUserById = async (req, res, next) => {
 	console.log({ params: req.params })
 	let { id } = req.params
+	let productPurchased = []
 	try {
-		let productPurchased = await db.User.aggregate([
-			{ $match: { _id: mongoose.Types.ObjectId(id) } },
-			{
-				$lookup: {
-					from: 'products',
-					localField: 'productPurchased',
-					foreignField: '_id',
-					as: 'productPurchased'
+		try {
+			productPurchased = await db.User.aggregate([
+				{ $match: { _id: mongoose.Types.ObjectId.createFromHexString(id) } },
+				{
+					$lookup: {
+						from: 'products',
+						localField: 'productPurchased',
+						foreignField: '_id',
+						as: 'productPurchased'
+					}
+				},
+				{ $unwind: '$productPurchased' },
+				{
+					$group: {
+						_id: '$productPurchased._id',
+						title: { $first: '$productPurchased.title' },
+						image: { $first: '$productPurchased.image' },
+						createdAt: { $first: '$productPurchased.createdAt' }
+					}
+				},
+				{
+					$project: {
+						_id: '$_id',
+						title: '$title',
+						image: '$image',
+						createdAt: '$createdAt'
+					}
 				}
-			},
-			{ $unwind: '$productPurchased' },
-			{
-				$group: {
-					_id: '$productPurchased._id',
-					title: { $first: '$productPurchased.title' },
-					image: { $first: '$productPurchased.image' },
-					createdAt: { $first: '$productPurchased.createdAt' }
-				}
-			},
-			{
-				$project: {
-					_id: '$_id',
-					title: '$title',
-					image: '$image',
-					createdAt: '$createdAt'
-				}
-			}
-		]).exec()
+			]).exec()
+			console.log({ productPurchased })
+		} catch (error) {
+			console.log(error)
+		}
+
 		const foundUser = await db.User.findById(id).populate({
 			path: 'orders',
 			select: 'paymantStatus createdAt',
