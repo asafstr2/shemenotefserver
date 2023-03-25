@@ -43,7 +43,7 @@ exports.deleteProductById = async (req, res, next) => {
 					function (error, result) {}
 				)
 		)
-		await foundProduct.remove()
+		await db.Products.deleteOne({ _id: productId })
 
 		res.status(200).json(foundProduct)
 	} catch (error) {
