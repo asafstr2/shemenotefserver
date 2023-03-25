@@ -25,6 +25,10 @@ const ProductsSchema = new mongoose.Schema(
 			type: String,
 			required: true
 		},
+		ingredients: {
+			type: String,
+			required: true
+		},
 		otherLanguageDescription: {
 			hebrew: { type: String },
 			russian: { type: String },
@@ -87,10 +91,6 @@ const ProductsSchema = new mongoose.Schema(
 		location: {
 			type: String,
 			default: 'shaked 24'
-		},
-		dimensions: {
-			width: { type: Number, default: 0, min: min },
-			height: { type: Number, default: 0, min: min }
 		},
 		price: {
 			value: { type: Number, default: 0, min: min },
