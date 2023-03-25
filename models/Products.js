@@ -25,9 +25,8 @@ const ProductsSchema = new mongoose.Schema(
 			type: String,
 			required: true
 		},
-		ingredients: {
-			type: String
-		},
+		ingredients: { type: String },
+
 		otherLanguageDescription: {
 			hebrew: { type: String },
 			russian: { type: String },
@@ -46,11 +45,7 @@ const ProductsSchema = new mongoose.Schema(
 			}
 		},
 		images: [],
-		quantity: {
-			type: Number,
-			default: 0,
-			min: min
-		},
+
 		quantetyInStock: {
 			type: Number,
 			min: min,
@@ -94,6 +89,10 @@ const ProductsSchema = new mongoose.Schema(
 		price: {
 			value: { type: Number, default: 0, min: min },
 			currency: { type: String, default: '₪' }
+		},
+		quantity: {
+			value: { type: Number, default: 0, min: min },
+			currency: { type: String, default: 'g' }
 		},
 		rating: {
 			rate: { type: Number, default: 0, min: min, max: max },
