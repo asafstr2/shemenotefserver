@@ -64,45 +64,15 @@ exports.getAllProductForUsers = async (req, res, next) => {
 	try {
 		let searchQuery = req.query?.search
 		if (searchQuery) {
-			let requestedFields = req.query?.fields?.split(',') ?? []
-			let primeryFieldToSearch = req.query.primery ?? 'title'
-			let seconderyFieldsToSearch = req.query?.secondery?.split(',') ?? [
-				'description',
-				'otherLanguageTitle.hebrew'
-			]
-			let projectedFields = { description: 1, 'otherLanguageTitle.hebrew': 1 }
-			requestedFields.forEach(filed => {
-				projectedFields[filed] = 1
-			})
 			const query = [
 				{
 					$search: {
-						compound: {
-							should: [
-								{
-									text: {
-										query: searchQuery,
-										path: primeryFieldToSearch,
-										fuzzy: {
-											maxEdits: 2
-										},
-										score: {
-											boost: {
-												value: 5
-											}
-										}
-									}
-								},
-								{
-									text: {
-										query: searchQuery,
-										path: seconderyFieldsToSearch,
-										fuzzy: {
-											maxEdits: 2
-										}
-									}
-								}
-							]
+						index: 'shemen_otef',
+						text: {
+							query: searchQuery,
+							path: {
+								wildcard: '*'
+							}
 						}
 					}
 				},
@@ -110,15 +80,6 @@ exports.getAllProductForUsers = async (req, res, next) => {
 					$match: {
 						listed: true,
 						availibleForDelivery: true
-					}
-				},
-				{
-					$project: {
-						title: 1,
-						score: {
-							$meta: 'searchScore'
-						},
-						...projectedFields
 					}
 				}
 			]
@@ -178,43 +139,18 @@ exports.getAllProduct = async (req, res, next) => {
 exports.autoCompleate = async (req, res, next) => {
 	try {
 		let searchQuery = req.query?.search ?? ''
-		let requestedFields = req.query?.fields?.split(',') ?? []
-		let primeryFieldToSearch = req.query.primery ?? 'otherLanguageTitle.default'
-		let projectedFields = {
-			description: 1,
-			'otherLanguageTitle.hebrew': 1,
-			'otherLanguageTitle.default': 1
-		}
-		requestedFields.forEach(filed => {
-			projectedFields[filed] = 1
-		})
+
 		console.log({ searchQuery })
 
-		const agg = [
+		const query = [
 			{
 				$search: {
-					compound: {
-						should: [
-							{
-								autocomplete: {
-									query: searchQuery,
-									path: primeryFieldToSearch
-								}
-							},
-							{
-								autocomplete: {
-									query: searchQuery,
-									path: 'title'
-								}
-							},
-							{
-								autocomplete: {
-									query: searchQuery,
-									path: 'otherLanguageTitle.hebrew'
-								}
-							}
-						],
-						minimumShouldMatch: 1
+					index: 'shemen_otef',
+					text: {
+						query: searchQuery,
+						path: {
+							wildcard: '*'
+						}
 					}
 				}
 			},
@@ -226,8 +162,7 @@ exports.autoCompleate = async (req, res, next) => {
 			}
 		]
 
-		let data = await db.Products.aggregate(agg)
-		console.log({ data })
+		let data = await db.Products.aggregate(query)
 		res.status(200).json(data)
 	} catch (error) {
 		next(error)
