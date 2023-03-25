@@ -26,8 +26,7 @@ const ProductsSchema = new mongoose.Schema(
 			required: true
 		},
 		ingredients: {
-			type: String,
-			required: true
+			type: String
 		},
 		otherLanguageDescription: {
 			hebrew: { type: String },
