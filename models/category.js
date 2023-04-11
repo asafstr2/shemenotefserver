@@ -31,6 +31,7 @@ const CategoriesSchema = new mongoose.Schema(
 				}
 			}
 		},
+		images: [],
 		image: {
 			type: String,
 			required: true,

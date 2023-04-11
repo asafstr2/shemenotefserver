@@ -12,6 +12,8 @@ const paymantSuccess = require('./routes/paymantSuccess')
 const notificationRoutes = require('./routes/notification')
 const contactUsRoutes = require('./routes/contactUs')
 const productsRoutes = require('./routes/products')
+const categoriesRoutes = require('./routes/categories')
+
 const {
 	loginRequired,
 	ensureCorrectUser,
@@ -48,6 +50,7 @@ app.use('/api/auth', authRoutes)
 // using prefix /api/paymant/:id/create
 app.use('/api/paymant/:id', loginRequired, ensureCorrectUser, paymantRoutes)
 app.use('/api/products/', productsRoutes)
+app.use('/api/categories/', categoriesRoutes)
 
 
 app.use(
