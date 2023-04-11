@@ -9,21 +9,15 @@ const apiKey = cloudinary.config().api_key
 exports.uploadAsset = async (req, res, next) => {
 	try {
 		const sig = signature.signuploadform()
-		console.log({
-			signature: sig.signature,
-			timestamp: sig.timestamp,
-			cloudname: cloudName,
-			apikey: apiKey,
-			folder: 'shemen_otef',
-			url: `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`
-		})
+
 		res.status(200).json({
 			signature: sig.signature,
 			timestamp: sig.timestamp,
 			cloudname: cloudName,
 			apikey: apiKey,
 			folder: 'shemen_otef',
-			url: `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`
+			url: `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+			upload_preset: 'kp9axy6w'
 		})
 	} catch (error) {
 		next(error)
@@ -122,6 +116,20 @@ exports.createProduct = async (req, res, next) => {
 			...req.body,
 			category: foundCategory
 		})
+		// data.images.map(({ public_id }) => {
+		// 	cloudinary.api
+		// 		.update(public_id, {
+		// 			background_removal: 'cloudinary_ai',
+		// 			notification_url: 'https://mysite.example.com/hooks'
+		// 		})
+		// 		.then(result => {
+		// 			console.log(result)
+		// 			console.log(result?.info)
+		// 			console.log(result?.info?.background_removal)
+		// 			console.log(result?.info?.background_removal?.cloudinary_ai)
+		// 		})
+		// 		.catch(err => console.log(err))
+		// })
 		res.status(201).json(data)
 	} catch (error) {
 		next(error)
