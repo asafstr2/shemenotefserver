@@ -97,39 +97,17 @@ exports.createProduct = async (req, res, next) => {
 		if (foundProduct) {
 			return next({ message: 'This title is taken try a differnt title' })
 		}
-		let foundCategory
-		if (req.body.category) {
-			foundCategory = await db.Categories.findOne({
-				title: req.body.category
-			})
-			if (foundCategory) {
-				foundCategory.Products.push(foundProduct)
-				await foundCategory.save()
-			} else {
-				foundCategory = await db.Categories.create({
-					...req.body,
-					title: req.body.category
-				})
-			}
-		}
+
+		const foundCategory = await db.Categories.findById(
+			req.body.categoryid ?? '64359d47009452581a0abe24'
+		)
 		const data = await db.Products.create({
 			...req.body,
 			category: foundCategory
 		})
-		// data.images.map(({ public_id }) => {
-		// 	cloudinary.api
-		// 		.update(public_id, {
-		// 			background_removal: 'cloudinary_ai',
-		// 			notification_url: 'https://mysite.example.com/hooks'
-		// 		})
-		// 		.then(result => {
-		// 			console.log(result)
-		// 			console.log(result?.info)
-		// 			console.log(result?.info?.background_removal)
-		// 			console.log(result?.info?.background_removal?.cloudinary_ai)
-		// 		})
-		// 		.catch(err => console.log(err))
-		// })
+
+		foundCategory.Products.push(data)
+		await foundCategory.save()
 		res.status(201).json(data)
 	} catch (error) {
 		next(error)
