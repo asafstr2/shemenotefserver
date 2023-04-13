@@ -62,7 +62,7 @@ app.use(
 app.use('/api/users/', loginRequired, viewOnly, userRoutes)
 
 //using error handler + error handler presenter
-app.use('/api', loginRequired, contactUsRoutes)
+app.use('/api/contact/', loginRequired, contactUsRoutes)
 
 app.use(errorHandler)
 

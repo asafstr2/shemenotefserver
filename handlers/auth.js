@@ -1,6 +1,6 @@
 const db = require('../models')
 const jwt = require('jsonwebtoken')
-const { sendMail } = require('../service/mailing/mailing')
+// const { sendMail } = require('../service/mailing/mailing')
 
 const userToToken = user => {
 	const token = jwt.sign(user.filterResponseForClient(), process.env.SECRET_KEY)
@@ -227,11 +227,11 @@ exports.resetPassword = async (req, res, next) => {
 		})
 		await user.save()
 		//send email with token for user.password
-		await sendMail(false, email, 'resetPassword', 'PASSWORD_RESET', {
-			token: user.passwordReset,
-			route: process.env.FRONT_BASE_URL,
-			compleateRoute: `${process.env.FRONT_BASE_URL}/passwordreset?token=${user.passwordReset}`
-		})
+		// await sendMail(false, email, 'resetPassword', 'PASSWORD_RESET', {
+		// 	token: user.passwordReset,
+		// 	route: process.env.FRONT_BASE_URL,
+		// 	compleateRoute: `${process.env.FRONT_BASE_URL}/passwordreset?token=${user.passwordReset}`
+		// })
 
 		if (process.env.NODE_ENV === 'test') {
 			res

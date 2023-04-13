@@ -1,7 +1,5 @@
 const db = require("../models");
-const { html } = require("../service/mailing/htmlTeplate");
-const { sendMail } = require("../service/mailing/mailing");
-const { sendNotificationToUser } = require("./webPush")
+
 
 
 exports.createNotification = async (req, res, next) => {

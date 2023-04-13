@@ -5,6 +5,8 @@ const paypal3 = require('@paypal/checkout-server-sdk');
 const paypal2 = require('@paypal/payouts-sdk');
 const db = require('../models')
 const { buildUrl, parseUrl } = require('../service/url/urlUtils')
+const { sendHtmlEmail } = require('../service/mailing/mail')
+
 const fetch = (...args) =>
 	import('node-fetch').then(({ default: fetch }) => fetch(...args))
 
@@ -100,7 +102,7 @@ exports.successhyp = async (req, res, next) => {
 			(CCoderes === 'CCode=200\n' || CCoderes === 'CCode=0\n') &&
 			CCoderes !== 'CCode=902\n'
 		) {
-			const order = await db.Orders.findById(Order)
+			const order = await db.Orders.findById(Order).populate('products')
 			order.paymantStatus = 'compleated'
 			await order.save()
 			const updatedUser = await db.User.findByIdAndUpdate(
@@ -112,6 +114,25 @@ exports.successhyp = async (req, res, next) => {
 				},
 				{ new: true }
 			).lean()
+			const ProductsPurchased = order.products.map(
+				product => `<ul><li>${product.title}</li></ul>`
+			)
+			const message = {
+				subject: ' הזמנה חדשה',
+				html: `<div style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5; color: #333;">
+				<h1 style="font-size: 24px; font-weight: bold; margin: 0;">${updatedUser.username} רכש</h1>
+				<p style="margin: 10px 0 0;">מספר הזמנה: ${order._id}</p>
+				<br>
+				<p style="margin: 10px 0 0;">מוצרים שנרכשו:</p>
+				${ProductsPurchased}
+				<br>
+				<p style="margin: 10px 0 0;">כתובת: ${order.address}</p>
+				<p style="margin: 10px 0 0;">אימייל: ${updatedUser.email}</p>
+				<p style="margin: 10px 0 0;">טלפון: ${order.phone}</p>
+			  </div>
+			  `
+			}
+			await sendHtmlEmail(message)
 			res.status(201).send({
 				verify: 'ok'
 			})
@@ -125,7 +146,7 @@ exports.successhyp = async (req, res, next) => {
 		next(error)
 	}
 }
-// http://localhost:3000/paymantSucess?Id=108209599&CCode=0&Amount=28&ACode=0067248&Order=640cb207402153898fbc8b77&Fild1=Asaf%20Strilitz&Fild2=asafstr2%40gmail.com&Fild3=&Bank=6&Payments=1&UserId=L717289593&Brand=2&Issuer=6&L4digit=6022&street=Hadarom&city=Shderot&zip=8711817&cell=Hashaked%2024&Coin=1&Tmonth=04&Tyear=2023&Info=shemen-otef&errMsg=%D7%AA%D7%A7%D7%99%D7%9F%20(0)&Hesh=0&UID=23031118555908822864318&SpType=0&BinCard=458012
+// http://localhost:3000/paymantSucess?Id=113079574&CCode=0&Amount=42&ACode=0069313&Order=6437f6bb27af17d7788b7b26&Fild1=Asaf%20Strilitz&Fild2=asaf.strilitz%40vimeo.com&Fild3=&Bank=6&Payments=1&UserId=L717289593&Brand=2&Issuer=6&L4digit=6022&street=Hadarom&city=Shderot&zip=8711817&cell=Hashaked%2024&Coin=1&Tmonth=04&Tyear=2023&Info=shemen-otef&errMsg=%D7%AA%D7%A7%D7%99%D7%9F%20(0)&Hesh=0&UID=23041315502008822864612&SpType=0&BinCard=458012
 exports.createPaymanthyp = async (req, res, next) => {
 	try {
 		const userId = req.params.id
@@ -139,7 +160,6 @@ exports.createPaymanthyp = async (req, res, next) => {
 			).lean()
 		)
 		const foundProducts = await Promise.all(foundProductPromise)
-
 		const enhencedProduct = foundProducts.map(product => {
 			return {
 				quantity: body.products[product._id],
