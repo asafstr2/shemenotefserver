@@ -103,6 +103,11 @@ exports.successhyp = async (req, res, next) => {
 			CCoderes !== 'CCode=902\n'
 		) {
 			const order = await db.Orders.findById(Order).populate('products')
+			if (order.paymantStatus === 'compleated') {
+				return res.status(200).send({
+					verify: 'ok already saved'
+				})
+			}
 			order.paymantStatus = 'compleated'
 			await order.save()
 			const updatedUser = await db.User.findByIdAndUpdate(
