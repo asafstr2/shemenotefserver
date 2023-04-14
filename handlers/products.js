@@ -106,7 +106,7 @@ exports.createProduct = async (req, res, next) => {
 			category: foundCategory
 		})
 
-		foundCategory.Products.push(data)
+		foundCategory.products.push(data)
 		await foundCategory.save()
 		res.status(201).json(data)
 	} catch (error) {

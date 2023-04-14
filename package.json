@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\"",
+    "server": "nodemon index.js",
+    "client": "cd ../shemenotefnew && npm start"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +17,7 @@
     "@sendgrid/mail": "^7.7.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.35.0",
+    "concurrently": "^8.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
