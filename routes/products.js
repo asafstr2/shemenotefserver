@@ -7,7 +7,8 @@ const {
 	createProduct,
 	getAllProduct,
 	uploadAsset,
-	autoCompleate
+	autoCompleate,
+	editProductById
 } = require('../handlers/products')
 const {
 	administrator,
@@ -27,6 +28,7 @@ router
 router
 	.route('/:id/foradmin/:productId')
 	.delete(loginRequired, ensureCorrectUser, administrator, deleteProductById)
+	.put(loginRequired, ensureCorrectUser, administrator, editProductById)
 router.route('/:productId').get(getProductById)
 router.route('/').get(getAllProductForUsers)
 

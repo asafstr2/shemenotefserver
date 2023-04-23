@@ -47,8 +47,8 @@ exports.deleteProductById = async (req, res, next) => {
 exports.getProductById = async (req, res, next) => {
 	try {
 		const { productId } = req.params
-		const data = await db.Products.findById(productId)
-		res.status(200).json(data)
+		let foundProduct = await db.Products.findById(productId)
+		res.status(200).json(foundProduct)
 	} catch (error) {
 		next(error)
 	}
@@ -150,6 +150,36 @@ exports.autoCompleate = async (req, res, next) => {
 
 		let data = await db.Products.aggregate(query)
 		res.status(200).json(data)
+	} catch (error) {
+		next(error)
+	}
+}
+
+exports.editProductById = async (req, res, next) => {
+	const productId = req.params.productId
+	const { categoryid } = req.body
+	const oldProduct = await db.Products.findById(productId)
+	const oldCategory = await db.Categories.findById(oldProduct.category)
+	try {
+		const updatedProduct = await db.Products.findOneAndUpdate(
+			{ _id: productId },
+			{ ...req.body, category: categoryid },
+			{ new: true }
+		)
+		// deleteing the product from the other category so it wont show on both
+		if (oldCategory) {
+			oldCategory.products.pull(oldProduct._id)
+			await oldCategory.save()
+		}
+		//checking to see if we already have the product in the category and if not updating category accordingly
+		if (categoryid) {
+			const foundCategory = await db.Categories.findById(req.body.categoryid)
+			if (!foundCategory.products.includes(updatedProduct._id)) {
+				foundCategory.products.push(updatedProduct)
+				await foundCategory.save()
+			}
+		}
+		res.status(200).json({ product: updatedProduct })
 	} catch (error) {
 		next(error)
 	}
